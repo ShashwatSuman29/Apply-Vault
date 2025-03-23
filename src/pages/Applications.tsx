@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import ApplicationRow from "../components/ApplicationRow";
 import { useAuth } from "../contexts/AuthContext";
@@ -25,7 +24,6 @@ export default function Applications() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
