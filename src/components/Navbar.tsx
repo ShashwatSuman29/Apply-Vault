@@ -1,12 +1,48 @@
-import { useState } from 'react';
-import { Bell, Search, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, Search, LogOut, Settings, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+
+interface ProfileData {
+  first_name: string | null;
+  last_name: string | null;
+}
 
 function Navbar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfileData();
+    }
+  }, [user]);
+
+  const fetchProfileData = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      setProfileData(data);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -16,6 +52,30 @@ function Navbar() {
       console.error('Error signing out:', error);
     }
   };
+
+  const navigateToSettings = () => {
+    navigate('/settings');
+    setIsProfileMenuOpen(false);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const dropdown = document.getElementById('profile-dropdown');
+      const button = document.getElementById('profile-button');
+      if (
+        dropdown &&
+        button &&
+        !dropdown.contains(event.target as Node) &&
+        !button.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <nav className="bg-white border-b border-gray-200">
@@ -45,28 +105,84 @@ function Navbar() {
             <div className="ml-4 relative flex-shrink-0">
               <div>
                 <button
+                  id="profile-button"
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                   className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <img
-                    className="h-8 w-8 rounded-full"
-                    src={`https://ui-avatars.com/api/?name=${user?.email?.split('@')[0]}&background=random`}
-                    alt={user?.email}
-                  />
+                  {loading ? (
+                    <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
+                  ) : (
+                    <img
+                      className="h-8 w-8 rounded-full"
+                      src={`https://ui-avatars.com/api/?name=${profileData?.first_name || user?.email?.split('@')[0]}&background=random`}
+                      alt={user?.email || 'Profile'}
+                    />
+                  )}
                 </button>
               </div>
               {isProfileMenuOpen && (
-                <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
-                    {user?.email}
+                <div
+                  id="profile-dropdown"
+                  className="origin-top-right absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none"
+                >
+                  <div className="px-4 py-3">
+                    <p className="text-sm">Signed in as</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {user?.email}
+                    </p>
                   </div>
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign out
-                  </button>
+                  <div className="py-3 px-4">
+                    <div className="flex items-center mb-3">
+                      <div className="flex-shrink-0">
+                        {loading ? (
+                          <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
+                        ) : (
+                          <img
+                            className="h-10 w-10 rounded-full"
+                            src={`https://ui-avatars.com/api/?name=${profileData?.first_name || user?.email?.split('@')[0]}&background=random`}
+                            alt=""
+                          />
+                        )}
+                      </div>
+                      <div className="ml-3">
+                        {loading ? (
+                          <div className="space-y-2">
+                            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                            <div className="h-3 w-32 bg-gray-100 rounded animate-pulse" />
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-base font-medium text-gray-700">
+                              {profileData?.first_name && profileData?.last_name
+                                ? `${profileData.first_name} ${profileData.last_name}`
+                                : 'Set up your profile'}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {profileData?.first_name ? 'View or edit profile' : 'Complete your profile'}
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="py-1">
+                    <button
+                      onClick={navigateToSettings}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                      disabled={loading}
+                    >
+                      <Settings className="mr-3 h-5 w-5 text-gray-400" />
+                      Settings
+                    </button>
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-gray-100 w-full"
+                      disabled={loading}
+                    >
+                      <LogOut className="mr-3 h-5 w-5 text-red-400" />
+                      Sign out
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
