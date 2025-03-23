@@ -7,16 +7,19 @@ import {
   Tooltip,
   Legend,
   ChartData,
+  Title,
 } from 'chart.js'
 import { Pie } from 'react-chartjs-2'
 
 // Register ChartJS components
-ChartJS.register(ArcElement, Tooltip, Legend)
+ChartJS.register(ArcElement, Tooltip, Legend, Title)
 
 interface CompanyTypeStats {
   companyType: string
   totalApplications: number
   acceptedApplications: number
+  rejectedApplications: number
+  inProgressApplications: number
   successRate: number
 }
 
@@ -62,15 +65,36 @@ export default function SuccessRateChart() {
       if (error) throw error
 
       // Group applications by company type and calculate success rates
-      const companyTypeMap = new Map<string, { total: number; accepted: number }>()
+      const companyTypeMap = new Map<
+        string,
+        {
+          total: number
+          accepted: number
+          rejected: number
+          inProgress: number
+        }
+      >()
 
       applications?.forEach((app) => {
         const companyType = app.company_type || 'Unknown'
-        const current = companyTypeMap.get(companyType) || { total: 0, accepted: 0 }
+        const current = companyTypeMap.get(companyType) || {
+          total: 0,
+          accepted: 0,
+          rejected: 0,
+          inProgress: 0,
+        }
         
         current.total++
-        if (app.status === 'Accepted') {
-          current.accepted++
+        switch (app.status) {
+          case 'Accepted':
+            current.accepted++
+            break
+          case 'Rejected':
+            current.rejected++
+            break
+          case 'In Progress':
+            current.inProgress++
+            break
         }
         
         companyTypeMap.set(companyType, current)
@@ -81,6 +105,8 @@ export default function SuccessRateChart() {
         companyType,
         totalApplications: stats.total,
         acceptedApplications: stats.accepted,
+        rejectedApplications: stats.rejected,
+        inProgressApplications: stats.inProgress,
         successRate: (stats.accepted / stats.total) * 100,
       }))
 
@@ -98,11 +124,12 @@ export default function SuccessRateChart() {
       {
         data: companyStats.map((stat) => stat.successRate),
         backgroundColor: [
-          'rgba(54, 162, 235, 0.5)',
-          'rgba(75, 192, 192, 0.5)',
-          'rgba(255, 206, 86, 0.5)',
-          'rgba(153, 102, 255, 0.5)',
-          'rgba(255, 159, 64, 0.5)',
+          'rgba(54, 162, 235, 0.8)',
+          'rgba(75, 192, 192, 0.8)',
+          'rgba(255, 206, 86, 0.8)',
+          'rgba(153, 102, 255, 0.8)',
+          'rgba(255, 159, 64, 0.8)',
+          'rgba(255, 99, 132, 0.8)',
         ],
         borderColor: [
           'rgba(54, 162, 235, 1)',
@@ -110,8 +137,9 @@ export default function SuccessRateChart() {
           'rgba(255, 206, 86, 1)',
           'rgba(153, 102, 255, 1)',
           'rgba(255, 159, 64, 1)',
+          'rgba(255, 99, 132, 1)',
         ],
-        borderWidth: 1,
+        borderWidth: 2,
       },
     ],
   }
@@ -122,17 +150,34 @@ export default function SuccessRateChart() {
     plugins: {
       legend: {
         position: 'right' as const,
+        labels: {
+          padding: 20,
+          font: {
+            size: 12,
+          },
+        },
       },
       tooltip: {
         callbacks: {
           label: (context: any) => {
             const stat = companyStats[context.dataIndex]
             return [
+              `${stat.companyType}:`,
               `Success Rate: ${stat.successRate.toFixed(1)}%`,
               `Accepted: ${stat.acceptedApplications}`,
-              `Total: ${stat.totalApplications}`,
+              `Rejected: ${stat.rejectedApplications}`,
+              `In Progress: ${stat.inProgressApplications}`,
+              `Total Applications: ${stat.totalApplications}`,
             ]
           },
+        },
+        padding: 12,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleFont: {
+          size: 14,
+        },
+        bodyFont: {
+          size: 13,
         },
       },
     },
@@ -156,17 +201,17 @@ export default function SuccessRateChart() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="h-64">
+      <div className="h-80">
         <Pie data={chartData} options={options} />
       </div>
-      <div className="space-y-4">
+      <div className="space-y-4 overflow-y-auto max-h-80">
         {companyStats.map((stat) => (
           <div
             key={stat.companyType}
-            className="bg-white p-4 rounded-lg border border-gray-200"
+            className="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
           >
             <h3 className="font-medium text-gray-900">{stat.companyType}</h3>
-            <div className="mt-2 grid grid-cols-3 gap-4 text-sm">
+            <div className="mt-2 grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-500">Success Rate</p>
                 <p className="font-medium text-green-600">
@@ -174,12 +219,35 @@ export default function SuccessRateChart() {
                 </p>
               </div>
               <div>
-                <p className="text-gray-500">Accepted</p>
-                <p className="font-medium">{stat.acceptedApplications}</p>
+                <p className="text-gray-500">Total Applications</p>
+                <p className="font-medium">{stat.totalApplications}</p>
               </div>
               <div>
-                <p className="text-gray-500">Total</p>
-                <p className="font-medium">{stat.totalApplications}</p>
+                <p className="text-gray-500">Accepted</p>
+                <p className="font-medium text-green-600">
+                  {stat.acceptedApplications}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">Rejected</p>
+                <p className="font-medium text-red-600">
+                  {stat.rejectedApplications}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">In Progress</p>
+                <p className="font-medium text-blue-600">
+                  {stat.inProgressApplications}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">Success Rate</p>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-green-600 h-2.5 rounded-full"
+                    style={{ width: `${stat.successRate}%` }}
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
