@@ -20,19 +20,19 @@ export default function Login() {
     try {
       console.log('Attempting to sign in with:', email) // Debug log
       
-      // First, check if the user exists and has confirmed their email
-      const { data: userCheck } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      // Use the signIn function from AuthContext instead of direct Supabase call
+      const { data, error: signInError } = await signIn(email, password)
 
-      if (userCheck.user) {
-        console.log('Sign in successful:', userCheck.user) // Debug log
+      if (signInError) {
+        throw signInError
+      }
+
+      if (data?.user) {
+        console.log('Sign in successful:', data.user) // Debug log
         
         // Check if email is confirmed
-        if (!userCheck.user.email_confirmed_at) {
+        if (!data.user.email_confirmed_at) {
           setError('Please verify your email before signing in. Check your inbox for the verification link.')
-          setLoading(false)
           return
         }
 
@@ -45,7 +45,11 @@ export default function Login() {
       }
     } catch (err: any) {
       console.error('Login error:', err) // Debug log
-      setError(err.message || 'An error occurred during login. Please try again.')
+      if (err.message === 'Invalid login credentials') {
+        setError('Invalid email or password. Please check your credentials and try again.')
+      } else {
+        setError(err.message || 'An error occurred during login. Please try again.')
+      }
     } finally {
       setLoading(false)
     }

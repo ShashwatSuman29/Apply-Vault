@@ -15,6 +15,8 @@ interface Application {
   contact_email?: string;
   contact_phone?: string;
   resume_url?: string;
+  last_date_to_apply?: string;
+  application_link?: string;
 }
 
 export default function Applications() {
@@ -97,6 +99,12 @@ export default function Applications() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Applied Date
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Last Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Apply Link
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -125,6 +133,25 @@ export default function Applications() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(application.applied_date).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {application.last_date_to_apply 
+                        ? new Date(application.last_date_to_apply).toLocaleDateString()
+                        : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {application.application_link ? (
+                        <a
+                          href={application.application_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Apply Link
+                        </a>
+                      ) : (
+                        '-'
+                      )}
                     </td>
                   </tr>
                 ))}

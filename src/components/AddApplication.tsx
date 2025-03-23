@@ -21,6 +21,8 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
     contactPhone: "",
     status: "In Progress",
     appliedDate: new Date().toISOString().split('T')[0],
+    lastDateToApply: "",
+    applicationLink: "",
   });
   const [resume, setResume] = useState<File | null>(null);
 
@@ -77,6 +79,8 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
           contact_phone: formData.contactPhone,
           status: formData.status,
           applied_date: formData.appliedDate,
+          last_date_to_apply: formData.lastDateToApply,
+          application_link: formData.applicationLink,
           resume_url: resumeUrl,
         },
       ]);
@@ -94,6 +98,8 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
         contactPhone: "",
         status: "In Progress",
         appliedDate: new Date().toISOString().split('T')[0],
+        lastDateToApply: "",
+        applicationLink: "",
       });
       setResume(null);
       
@@ -260,6 +266,35 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
                   required
                   value={formData.appliedDate}
                   onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="lastDateToApply" className="block text-sm font-medium text-gray-700">
+                  Last Date to Apply
+                </label>
+                <input
+                  type="date"
+                  id="lastDateToApply"
+                  name="lastDateToApply"
+                  value={formData.lastDateToApply}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="applicationLink" className="block text-sm font-medium text-gray-700">
+                  Job/Company Apply Link
+                </label>
+                <input
+                  type="url"
+                  id="applicationLink"
+                  name="applicationLink"
+                  value={formData.applicationLink}
+                  onChange={handleInputChange}
+                  placeholder="https://example.com/apply"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
