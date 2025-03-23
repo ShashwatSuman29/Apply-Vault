@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Search, LogOut, Settings, User } from 'lucide-react';
+import { Bell, Search, LogOut, Settings} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
