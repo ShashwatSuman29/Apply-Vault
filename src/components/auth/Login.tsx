@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { Briefcase } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 export default function Login() {
@@ -17,27 +18,34 @@ export default function Login() {
     setLoading(true)
 
     try {
-      const { data, error } = await signIn(email, password)
+      console.log('Attempting to sign in with:', email) // Debug log
       
-      if (error) {
-        if (error.message.includes('Email not confirmed')) {
-          setError('Please check your email for the verification link. You need to verify your email before signing in.')
-        } else {
-          throw error
+      // First, check if the user exists and has confirmed their email
+      const { data: userCheck } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (userCheck.user) {
+        console.log('Sign in successful:', userCheck.user) // Debug log
+        
+        // Check if email is confirmed
+        if (!userCheck.user.email_confirmed_at) {
+          setError('Please verify your email before signing in. Check your inbox for the verification link.')
+          setLoading(false)
+          return
         }
-        return
-      }
-      
-      if (data.user) {
+
+        // If we get here, the user is verified and logged in
+        console.log('User is verified, redirecting to dashboard') // Debug log
         navigate('/dashboard')
+      } else {
+        console.log('Sign in failed - no user returned') // Debug log
+        setError('Invalid email or password. Please check your credentials and try again.')
       }
     } catch (err: any) {
-      console.error('Login error:', err)
-      if (err?.message?.toLowerCase().includes('invalid login credentials')) {
-        setError('Invalid email or password. Please try again.')
-      } else {
-        setError(err instanceof Error ? err.message : 'An error occurred during login')
-      }
+      console.error('Login error:', err) // Debug log
+      setError(err.message || 'An error occurred during login. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -61,8 +69,11 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
+          <div className="flex justify-center">
+            <Briefcase className="h-12 w-12 text-blue-600" />
+          </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Sign in to ApplyVault
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>

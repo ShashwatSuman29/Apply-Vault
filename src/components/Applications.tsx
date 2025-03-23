@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
+import AddApplication from "./AddApplication";
 import { supabase } from "../lib/supabase";
-import AddApplication from "../components/AddApplication";
 
 interface Application {
   id: string;
@@ -9,12 +9,6 @@ interface Application {
   company: string;
   status: string;
   applied_date: string;
-  job_description?: string;
-  tech_stack?: string;
-  college_name?: string;
-  contact_email?: string;
-  contact_phone?: string;
-  resume_url?: string;
 }
 
 export default function Applications() {
@@ -29,21 +23,15 @@ export default function Applications() {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      
-      // Get the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('You must be logged in to view applications');
-      }
-
       const { data, error } = await supabase
         .from("applications")
         .select("*")
-        .eq('user_id', user.id)
         .order('applied_date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+
       setApplications(data || []);
     } catch (error) {
       console.error('Error fetching applications:', error);
@@ -142,4 +130,4 @@ export default function Applications() {
       />
     </div>
   );
-}
+} 

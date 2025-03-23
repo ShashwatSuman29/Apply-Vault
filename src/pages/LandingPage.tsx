@@ -61,7 +61,7 @@ function LandingPage() {
               transition={{ type: "spring", stiffness: 400 }}
             >
               <Briefcase className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">JobTracker</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">ApplyVault</span>
             </motion.div>
             <div className="flex items-center">
               <motion.div
@@ -99,7 +99,7 @@ function LandingPage() {
             variants={itemVariants}
             className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl"
           >
-            Streamline your job search process with JobTracker. Keep track of applications, credentials, and progress in a secure, organized way.
+            Streamline your job search process with ApplyVault. Keep track of applications, credentials, and progress in a secure, organized way.
           </motion.p>
           <motion.div
             variants={itemVariants}
@@ -134,7 +134,7 @@ function LandingPage() {
               variants={itemVariants}
               className="text-3xl font-extrabold text-gray-900"
             >
-              Why Choose JobTracker?
+              Why Choose ApplyVault?
             </motion.h2>
           </motion.div>
 

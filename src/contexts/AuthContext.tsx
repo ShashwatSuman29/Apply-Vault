@@ -32,41 +32,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signUp = async (email: string, password: string) => {
-    const response = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/login`,
-        data: {
-          email: email,
+    try {
+      const response = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+          data: {
+            email: email,
+          }
         }
+      })
+
+      if (response.error) {
+        throw response.error
       }
-    })
-    return response
+
+      return response
+    } catch (error) {
+      console.error('Signup error:', error)
+      return { data: null, error }
+    }
   }
 
   const signIn = async (email: string, password: string) => {
-    const response = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    
-    // Check if the user's email is confirmed
-    if (response.data?.user && !response.data.user.email_confirmed_at) {
-      return {
-        data: response.data,
-        error: {
-          message: 'Email not confirmed. Please check your email for the verification link.'
+    try {
+      console.log('AuthContext: Attempting sign in for:', email) // Debug log
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        console.error('AuthContext: Sign in error:', error) // Debug log
+        return { data: null, error }
+      }
+
+      if (!data.user) {
+        console.error('AuthContext: No user returned after sign in') // Debug log
+        return {
+          data: null,
+          error: { message: 'Invalid login credentials' }
         }
       }
+
+      // Check if email is confirmed
+      if (!data.user.email_confirmed_at) {
+        console.log('AuthContext: Email not confirmed for user') // Debug log
+        return {
+          data,
+          error: {
+            message: 'Email not confirmed. Please check your email for the verification link.'
+          }
+        }
+      }
+
+      console.log('AuthContext: Sign in successful') // Debug log
+      return { data, error: null }
+    } catch (error) {
+      console.error('AuthContext: Unexpected error during sign in:', error) // Debug log
+      return { 
+        data: null, 
+        error: { 
+          message: 'An unexpected error occurred during sign in.' 
+        } 
+      }
     }
-    
-    return response
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+    } catch (error) {
+      console.error('Signout error:', error)
+      throw error
+    }
   }
 
   return (
