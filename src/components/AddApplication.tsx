@@ -8,10 +8,25 @@ interface AddApplicationProps {
   onApplicationAdded?: () => void;
 }
 
+interface FormData {
+  jobTitle: string;
+  company: string;
+  jobDescription: string;
+  techStack: string;
+  collegeName: string;
+  contactEmail: string;
+  contactPhone: string;
+  status: string;
+  appliedDate: string;
+  lastDateToApply: string;
+  applicationLink: string;
+  company_type: string;
+}
+
 export default function AddApplication({ isOpen, onClose, onApplicationAdded }: AddApplicationProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     jobTitle: "",
     company: "",
     jobDescription: "",
@@ -23,6 +38,7 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
     appliedDate: new Date().toISOString().split('T')[0],
     lastDateToApply: "",
     applicationLink: "",
+    company_type: 'Other',
   });
   const [resume, setResume] = useState<File | null>(null);
 
@@ -82,6 +98,7 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
           last_date_to_apply: formData.lastDateToApply,
           application_link: formData.applicationLink,
           resume_url: resumeUrl,
+          company_type: formData.company_type,
         },
       ]);
 
@@ -100,6 +117,7 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
         appliedDate: new Date().toISOString().split('T')[0],
         lastDateToApply: "",
         applicationLink: "",
+        company_type: 'Other',
       });
       setResume(null);
       
@@ -297,6 +315,27 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
                   placeholder="https://example.com/apply"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
+              </div>
+
+              <div>
+                <label htmlFor="company_type" className="block text-sm font-medium text-gray-700">
+                  Company Type
+                </label>
+                <select
+                  id="company_type"
+                  name="company_type"
+                  value={formData.company_type}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  required
+                >
+                  <option value="Startup">Startup</option>
+                  <option value="Small Business">Small Business</option>
+                  <option value="Mid-size Company">Mid-size Company</option>
+                  <option value="Large Enterprise">Large Enterprise</option>
+                  <option value="FAANG">FAANG</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
 
               <div className="md:col-span-2">
