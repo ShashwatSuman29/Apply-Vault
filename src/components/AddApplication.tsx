@@ -72,14 +72,35 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
       // Upload resume if provided
       let resumeUrl = null;
       if (resume) {
-        const fileExt = resume.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const { error: uploadError, data } = await supabase.storage
-          .from('resumes')
-          .upload(`resumes/${fileName}`, resume);
+        try {
+          const fileExt = resume.name.split('.').pop();
+          const fileName = `${user.id}/${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-        if (uploadError) throw uploadError;
-        resumeUrl = data.path;
+          // Upload the file
+          const { error: uploadError, data } = await supabase.storage
+            .from('resumes')
+            .upload(fileName, resume, {
+              cacheControl: '3600',
+              upsert: false,
+              contentType: resume.type
+            });
+
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            if (uploadError.message.includes('bucket not found')) {
+              throw new Error('Resume storage system is not available. Please try again later or contact support.');
+            } else {
+              throw new Error(`Failed to upload resume: ${uploadError.message}`);
+            }
+          }
+
+          if (data) {
+            resumeUrl = fileName;
+          }
+        } catch (error: any) {
+          console.error('Resume upload error:', error);
+          throw new Error(error.message || 'Failed to upload resume. Please try again.');
+        }
       }
 
       // Insert application data with user_id

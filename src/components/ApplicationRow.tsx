@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, ExternalLink, FileText, Mail, Code } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface Application {
   id: string;
@@ -20,6 +21,41 @@ interface ApplicationRowProps {
 
 export default function ApplicationRow({ application }: ApplicationRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
+
+  // Get the public URL for the resume when expanded
+  const getResumeUrl = async () => {
+    if (application.resume_url) {
+      try {
+        // Get the signed URL for private bucket access
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+          .from('resumes')
+          .createSignedUrl(application.resume_url, 60 * 60); // 1 hour expiry
+
+        if (signedUrlError) {
+          console.error('Error getting resume URL:', signedUrlError);
+          if (signedUrlError.message.includes('bucket not found')) {
+            throw new Error('Resume storage system is not available.');
+          }
+          throw signedUrlError;
+        }
+
+        if (signedUrlData?.signedUrl) {
+          setResumeUrl(signedUrlData.signedUrl);
+        }
+      } catch (error: any) {
+        console.error('Resume access error:', error);
+        // Don't throw the error, just log it and let the UI handle the failed state
+      }
+    }
+  };
+
+  // Get resume URL when row is expanded
+  useEffect(() => {
+    if (isExpanded && application.resume_url && !resumeUrl) {
+      getResumeUrl();
+    }
+  }, [isExpanded, application.resume_url]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -89,15 +125,19 @@ export default function ApplicationRow({ application }: ApplicationRowProps) {
                 <div>
                   <h4 className="text-sm font-medium text-gray-900">Resume</h4>
                   {application.resume_url ? (
-                    <a
-                      href={application.resume_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:text-blue-800 flex items-center mt-1"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      View Resume <ExternalLink className="h-4 w-4 ml-1" />
-                    </a>
+                    resumeUrl ? (
+                      <a
+                        href={resumeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800 flex items-center mt-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View Resume <ExternalLink className="h-4 w-4 ml-1" />
+                      </a>
+                    ) : (
+                      <p className="text-sm text-gray-500 mt-1">Loading resume...</p>
+                    )
                   ) : (
                     <p className="text-sm text-gray-500 mt-1">No resume uploaded</p>
                   )}
