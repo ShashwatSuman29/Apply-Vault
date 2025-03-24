@@ -3,6 +3,7 @@ import { Bell, Search, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { MobileNav } from './MobileNav';
 
 interface ProfileData {
   first_name: string | null;
@@ -183,12 +184,17 @@ function Navbar() {
               </div>
             </div>
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
             <button className="p-2 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               <span className="sr-only">View notifications</span>
               <Bell className="h-6 w-6" />
             </button>
-            <div className="ml-4 relative flex-shrink-0">
+
+            {/* Mobile Navigation */}
+            <MobileNav />
+
+            {/* Desktop Profile Dropdown */}
+            <div className="ml-4 relative flex-shrink-0 hidden sm:block">
               <div>
                 <button
                   id="profile-button"

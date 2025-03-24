@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 
 interface AddApplicationProps {
   isOpen: boolean;
   onClose: () => void;
-  onApplicationAdded?: () => void;
+  onApplicationAdded: () => void;
 }
 
 interface FormData {
@@ -24,6 +25,7 @@ interface FormData {
 }
 
 export default function AddApplication({ isOpen, onClose, onApplicationAdded }: AddApplicationProps) {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
@@ -56,27 +58,22 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // Get the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) {
         throw new Error('You must be logged in to add an application');
       }
 
-      // Upload resume if provided
       let resumeUrl = null;
       if (resume) {
         try {
           const fileExt = resume.name.split('.').pop();
           const fileName = `${user.id}/${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-          // Upload the file
           const { error: uploadError, data } = await supabase.storage
             .from('resumes')
             .upload(fileName, resume, {
@@ -103,7 +100,6 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
         }
       }
 
-      // Insert application data with user_id
       const { error } = await supabase.from("applications").insert([
         {
           user_id: user.id,
@@ -157,70 +153,76 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Add New Application</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-              <X size={24} />
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-white rounded-lg w-full max-w-lg my-4 relative">
+        <div className="p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Add New Application</h2>
+            <button 
+              onClick={onClose} 
+              className="text-gray-500 hover:text-gray-700 p-1.5"
+              aria-label="Close"
+            >
+              <X size={20} />
             </button>
           </div>
 
           {error && (
-            <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+            <div className="mb-4 p-2.5 text-sm bg-red-50 text-red-700 rounded-md">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700">
-                  Job Title*
-                </label>
-                <input
-                  type="text"
-                  id="jobTitle"
-                  name="jobTitle"
-                  required
-                  value={formData.jobTitle}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="grid grid-cols-1 gap-3">
+              <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3">
+                <div>
+                  <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700 mb-1">
+                    Job Title*
+                  </label>
+                  <input
+                    type="text"
+                    id="jobTitle"
+                    name="jobTitle"
+                    required
+                    value={formData.jobTitle}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 h-9"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
+                    Company*
+                  </label>
+                  <input
+                    type="text"
+                    id="company"
+                    name="company"
+                    required
+                    value={formData.company}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 h-9"
+                  />
+                </div>
               </div>
 
               <div>
-                <label htmlFor="company" className="block text-sm font-medium text-gray-700">
-                  Company*
-                </label>
-                <input
-                  type="text"
-                  id="company"
-                  name="company"
-                  required
-                  value={formData.company}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700 mb-1">
                   Job Description
                 </label>
                 <textarea
                   id="jobDescription"
                   name="jobDescription"
-                  rows={3}
+                  rows={2}
                   value={formData.jobDescription}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 resize-none"
                 />
               </div>
 
               <div>
-                <label htmlFor="techStack" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="techStack" className="block text-sm font-medium text-gray-700 mb-1">
                   Tech Stack
                 </label>
                 <input
@@ -230,102 +232,114 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
                   value={formData.techStack}
                   onChange={handleInputChange}
                   placeholder="e.g., React, Node.js, Python"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 h-9"
                 />
               </div>
 
-              <div>
-                <label htmlFor="collegeName" className="block text-sm font-medium text-gray-700">
-                  College Name
-                </label>
-                <input
-                  type="text"
-                  id="collegeName"
-                  name="collegeName"
-                  value={formData.collegeName}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
+              <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3">
+                <div>
+                  <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Email
+                  </label>
+                  <input
+                    type="email"
+                    id="contactEmail"
+                    name="contactEmail"
+                    value={formData.contactEmail}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 h-9"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Phone
+                  </label>
+                  <input
+                    type="tel"
+                    id="contactPhone"
+                    name="contactPhone"
+                    value={formData.contactPhone}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 h-9"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3">
+                <div>
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                    Status*
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    required
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 h-9"
+                  >
+                    <option value="In Progress">In Progress</option>
+                    <option value="Accepted">Accepted</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="company_type" className="block text-sm font-medium text-gray-700 mb-1">
+                    Company Type
+                  </label>
+                  <select
+                    id="company_type"
+                    name="company_type"
+                    value={formData.company_type}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 h-9"
+                  >
+                    <option value="Startup">Startup</option>
+                    <option value="Small Business">Small Business</option>
+                    <option value="Mid-size Company">Mid-size</option>
+                    <option value="Large Enterprise">Large</option>
+                    <option value="FAANG">FAANG</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3">
+                <div>
+                  <label htmlFor="appliedDate" className="block text-sm font-medium text-gray-700 mb-1">
+                    Applied Date*
+                  </label>
+                  <input
+                    type="date"
+                    id="appliedDate"
+                    name="appliedDate"
+                    required
+                    value={formData.appliedDate}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 h-9"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="lastDateToApply" className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Date
+                  </label>
+                  <input
+                    type="date"
+                    id="lastDateToApply"
+                    name="lastDateToApply"
+                    value={formData.lastDateToApply}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 h-9"
+                  />
+                </div>
               </div>
 
               <div>
-                <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700">
-                  Contact Email
-                </label>
-                <input
-                  type="email"
-                  id="contactEmail"
-                  name="contactEmail"
-                  value={formData.contactEmail}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700">
-                  Contact Phone
-                </label>
-                <input
-                  type="tel"
-                  id="contactPhone"
-                  name="contactPhone"
-                  value={formData.contactPhone}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                  Status*
-                </label>
-                <select
-                  id="status"
-                  name="status"
-                  required
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                >
-                  <option value="In Progress">In Progress</option>
-                  <option value="Accepted">Accepted</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="appliedDate" className="block text-sm font-medium text-gray-700">
-                  Applied Date*
-                </label>
-                <input
-                  type="date"
-                  id="appliedDate"
-                  name="appliedDate"
-                  required
-                  value={formData.appliedDate}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="lastDateToApply" className="block text-sm font-medium text-gray-700">
-                  Last Date to Apply
-                </label>
-                <input
-                  type="date"
-                  id="lastDateToApply"
-                  name="lastDateToApply"
-                  value={formData.lastDateToApply}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="applicationLink" className="block text-sm font-medium text-gray-700">
-                  Job/Company Apply Link
+                <label htmlFor="applicationLink" className="block text-sm font-medium text-gray-700 mb-1">
+                  Apply Link
                 </label>
                 <input
                   type="url"
@@ -334,33 +348,12 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
                   value={formData.applicationLink}
                   onChange={handleInputChange}
                   placeholder="https://example.com/apply"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 h-9"
                 />
               </div>
 
               <div>
-                <label htmlFor="company_type" className="block text-sm font-medium text-gray-700">
-                  Company Type
-                </label>
-                <select
-                  id="company_type"
-                  name="company_type"
-                  value={formData.company_type}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  required
-                >
-                  <option value="Startup">Startup</option>
-                  <option value="Small Business">Small Business</option>
-                  <option value="Mid-size Company">Mid-size Company</option>
-                  <option value="Large Enterprise">Large Enterprise</option>
-                  <option value="FAANG">FAANG</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div className="md:col-span-2">
-                <label htmlFor="resume" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="resume" className="block text-sm font-medium text-gray-700 mb-1">
                   Resume
                 </label>
                 <input
@@ -368,28 +361,28 @@ export default function AddApplication({ isOpen, onClose, onApplicationAdded }: 
                   id="resume"
                   onChange={handleFileChange}
                   accept=".pdf,.doc,.docx"
-                  className="mt-1 block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
+                  className="block w-full text-sm text-gray-500
+                    file:mr-3 file:py-1.5 file:px-3
                     file:rounded-md file:border-0
-                    file:text-sm file:font-semibold
+                    file:text-sm file:font-medium
                     file:bg-blue-50 file:text-blue-700
                     hover:file:bg-blue-100"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-6">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4 border-t">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full sm:w-auto px-3 py-1.5 text-sm border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full sm:w-auto px-3 py-1.5 text-sm border border-transparent rounded-md font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 {loading ? "Adding..." : "Add Application"}
               </button>

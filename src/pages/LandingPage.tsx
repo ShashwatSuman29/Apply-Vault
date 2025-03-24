@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
-import { Briefcase, CheckCircle, Shield, Zap, FileText, Search, Calendar, BarChart } from 'lucide-react';
+import { Briefcase, CheckCircle, Shield, Zap,} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { BackgroundPaths } from '../components/ui/background-paths';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,17 +39,6 @@ const featureCardVariants = {
   }
 };
 
-const floatingIconVariants = {
-  animate: {
-    y: [0, -10, 0],
-    transition: {
-      duration: 3,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }
-  }
-};
-
 function LandingPage() {
   const [featuresRef, inView] = useInView({
     triggerOnce: true,
@@ -56,13 +46,13 @@ function LandingPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-indigo-50/30 to-slate-50 dark:from-slate-900 dark:via-indigo-950/30 dark:to-slate-900 transition-colors duration-200">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-slate-900 dark:to-slate-800">
       {/* Navigation */}
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-indigo-100 dark:border-indigo-950 fixed w-full z-10"
+        className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b border-teal-100 dark:border-teal-500/10 fixed w-full z-[100]"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-14 sm:h-16">
@@ -71,8 +61,8 @@ function LandingPage() {
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400 }}
             >
-              <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600 dark:text-indigo-400" />
-              <span className="ml-2 text-lg sm:text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 bg-clip-text text-transparent">ApplyVault</span>
+              <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-teal-600 dark:text-teal-400" />
+              <span className="ml-2 text-lg sm:text-xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 dark:from-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">ApplyVault</span>
             </motion.div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
@@ -82,7 +72,7 @@ function LandingPage() {
               >
                 <Link
                   to="/login"
-                  className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 dark:from-indigo-500 dark:to-violet-500 dark:hover:from-indigo-600 dark:hover:to-violet-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900"
+                  className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 dark:from-teal-400 dark:to-cyan-400 dark:hover:from-teal-300 dark:hover:to-cyan-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 dark:focus:ring-offset-slate-900 transition-all duration-200"
                 >
                   Sign Up
                 </Link>
@@ -97,82 +87,64 @@ function LandingPage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="relative pt-16 overflow-hidden"
+        className="relative pt-24 sm:pt-32 pb-20 overflow-hidden"
       >
-        {/* Floating Icons - Hide on mobile, show on larger screens */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none hidden sm:block">
-          <motion.div
-            variants={floatingIconVariants}
-            animate="animate"
-            className="absolute top-1/4 left-1/4 text-indigo-200"
-          >
-            <FileText size={32} />
-          </motion.div>
-          <motion.div
-            variants={floatingIconVariants}
-            animate="animate"
-            className="absolute top-1/3 right-1/4 text-violet-200"
-          >
-            <Search size={24} />
-          </motion.div>
-          <motion.div
-            variants={floatingIconVariants}
-            animate="animate"
-            className="absolute bottom-1/4 left-1/3 text-indigo-200"
-          >
-            <Calendar size={28} />
-          </motion.div>
-          <motion.div
-            variants={floatingIconVariants}
-            animate="animate"
-            className="absolute top-2/3 right-1/3 text-violet-200"
-          >
-            <BarChart size={32} />
-          </motion.div>
-        </div>
+        <BackgroundPaths />
 
-        {/* Background Gradient Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-20 sm:-top-40 -right-16 sm:-right-32 w-48 sm:w-96 h-48 sm:h-96 rounded-full bg-gradient-to-br from-indigo-400/20 to-violet-500/20 dark:from-indigo-500/10 dark:to-violet-600/10 blur-3xl" />
-          <div className="absolute -bottom-20 sm:-bottom-40 -left-16 sm:-left-32 w-48 sm:w-96 h-48 sm:h-96 rounded-full bg-gradient-to-tr from-violet-400/20 to-fuchsia-500/20 dark:from-violet-500/10 dark:to-fuchsia-600/10 blur-3xl" />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-12 sm:pb-16 text-center lg:pt-32 relative z-10">
-          <motion.h1
-            variants={itemVariants}
-            className="text-3xl tracking-tight font-extrabold sm:text-5xl md:text-6xl px-4 sm:px-0"
-          >
-            <span className="block bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">Track Your Job Search</span>
-            <span className="block bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 bg-clip-text text-transparent mt-2">All in One Place</span>
-          </motion.h1>
-          <motion.p
-            variants={itemVariants}
-            className="mt-4 sm:mt-6 max-w-md mx-auto text-sm text-slate-600 dark:text-slate-400 sm:text-lg md:mt-8 md:text-xl md:max-w-3xl px-4 sm:px-0"
-          >
-            Streamline your job search process with ApplyVault. Keep track of applications, credentials, and progress in a secure, organized way.
-          </motion.p>
-          <motion.div
-            variants={itemVariants}
-            className="mt-8 sm:mt-10 flex justify-center px-4 sm:px-0"
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full sm:w-auto"
-            >
-              <Link
-                to="/login"
-                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 inline-block md:py-4 md:text-lg md:px-10"
+        {/* Content Grid */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Text Content */}
+            <div className="text-left space-y-8">
+              <motion.h1
+                variants={itemVariants}
+                className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight"
               >
-                Get Started
-              </Link>
-            </motion.div>
-          </motion.div>
+                <span className="block text-slate-800 dark:text-white">Track Your Job Search</span>
+                <span className="block bg-gradient-to-r from-teal-600 to-cyan-600 dark:from-teal-400 dark:to-cyan-400 bg-clip-text text-transparent mt-2">All in One Place</span>
+              </motion.h1>
+              <motion.p
+                variants={itemVariants}
+                className="text-slate-600 dark:text-slate-300 text-lg sm:text-xl max-w-xl"
+              >
+                Streamline your job search process with ApplyVault. Keep track of applications, credentials, and progress in a secure, organized way.
+              </motion.p>
+              <motion.div
+                variants={itemVariants}
+                className="flex flex-col sm:flex-row gap-4"
+              >
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-full text-white bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 shadow-lg hover:shadow-teal-500/25 transition-all duration-200"
+                >
+                  Get Started
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* Right Column - Decorative Elements */}
+            <div className="relative hidden lg:block">
+              <div className="absolute top-1/2 right-0 transform -translate-y-1/2">
+                <div className="relative">
+                  {/* Decorative square */}
+                  <div className="absolute -top-20 -left-20 w-40 h-40 bg-teal-200/30 dark:bg-teal-500/20 rounded-3xl transform rotate-12" />
+                  {/* Decorative circle */}
+                  <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-cyan-200/40 dark:bg-cyan-500/20 rounded-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-20 sm:-top-40 -right-16 sm:-right-32 w-48 sm:w-96 h-48 sm:h-96 rounded-full bg-gradient-to-br from-teal-400/20 to-cyan-500/20 dark:from-teal-500/20 dark:to-cyan-400/20 blur-3xl" />
+          <div className="absolute -bottom-20 sm:-bottom-40 -left-16 sm:-left-32 w-48 sm:w-96 h-48 sm:h-96 rounded-full bg-gradient-to-tr from-cyan-400/20 to-teal-500/20 dark:from-cyan-500/20 dark:to-teal-400/20 blur-3xl" />
         </div>
       </motion.div>
 
       {/* Features Section */}
-      <div className="py-12 sm:py-16 bg-gradient-to-b from-slate-50 via-indigo-50/30 to-slate-50 dark:from-slate-900 dark:via-indigo-950/30 dark:to-slate-900">
+      <div className="py-12 sm:py-16 bg-gradient-to-b from-slate-50 via-indigo-50/30 to-slate-50 dark:from-slate-900 dark:via-indigo-900/20 dark:to-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             ref={featuresRef}
@@ -226,7 +198,7 @@ function LandingPage() {
                         <motion.span
                           whileHover={{ rotate: 360 }}
                           transition={{ duration: 0.5 }}
-                          className="inline-flex items-center justify-center p-2.5 sm:p-3 bg-gradient-to-r from-indigo-500 to-violet-500 dark:from-indigo-400 dark:to-violet-400 rounded-md shadow-lg"
+                          className="inline-flex items-center justify-center p-2.5 sm:p-3 bg-gradient-to-r from-teal-500 to-cyan-500 dark:from-teal-400 dark:to-cyan-400 rounded-md shadow-lg"
                         >
                           <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                         </motion.span>
