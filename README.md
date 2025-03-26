@@ -37,4 +37,4 @@ Job seekers often struggle to keep track of the numerous applications they send 
 - **Enhancing security** by securely storing login credentials rather than relying on risky methods like writing them down.
 - **Increasing efficiency** with filtering, sorting, and reminders to stay on top of job applications.
 
-This tool is perfect for **professionals, fresh graduates, and freelancers** actively seeking new opportunities while keeping their job search process organized and stress-free. 🚀
+This tool is perfect for **professionals, fresh graduates, and freelancers** actively seeking new opportunities while keeping their job search process organized and stress-free. 
